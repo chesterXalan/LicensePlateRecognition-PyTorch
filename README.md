@@ -1,3 +1,3 @@
 # LicensePlateRecognition-PyTorch
 
-A Taiwanese license plate recognition system in PyTorch.
+A Taiwanese license plate (LP) recognition system in PyTorch.
