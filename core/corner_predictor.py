@@ -7,20 +7,20 @@ import numpy as np
 import os.path as osp
 
 import torch
+from torch.nn.modules.container import Sequential
 
 class CornerPredictor():
-    def __init__(self, model_name):
+    def __init__(self, model_name: str):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model_file = osp.join(r'core\models', model_name, 'model.pth')
-        self.model = torch.load(model_file).to(self.device)
-        
+        self.model: Sequential = torch.load(model_file).to(self.device)
         self.model.eval()
         print(f'<{model_name}> model loaded.')
 
         self.w, self.h = (128, 64)
         self.ow, self.oh = (100, 50)
 
-    def loadImage(self, image, crop=False, pts=None):
+    def loadImage(self, image: np.ndarray, crop: bool = False, pts: np.ndarray = None):
         if crop:
             pts = pts.copy().reshape(2, 2)
             offset_x, offset_y = int(0.2*(pts[1, 0]-pts[0, 0])), int(0.2*(pts[1, 1]-pts[0, 1]))
@@ -61,7 +61,7 @@ class CornerPredictor():
 
         return res.astype('uint8'), pts.astype('int')
 
-    def restoreValues(self, pts):
+    def restoreValues(self, pts: np.ndarray):
         pts = pts.reshape(4, 2)
         pts[:, 0] = np.round(pts[:, 0]*self.w)
         pts[:, 1] = np.round(pts[:, 1]*self.h)
@@ -74,7 +74,7 @@ class CornerPredictor():
 
         return pts
 
-    def perspective(self, image, pts):
+    def perspective(self, image: np.ndarray, pts: np.ndarray):
         res = np.array([[0, 0], [self.ow, 0], [self.ow, self.oh], [0, self.oh]], dtype=np.float32)
         m = cv2.getPerspectiveTransform(pts, res)
         res = cv2.warpPerspective(image, m, (self.ow, self.oh))
